@@ -6,6 +6,7 @@ const createConversation = async (req, res) => {
   try {
     const { carId } = req.body;
     const buyerId = req.user.userId;
+
     const car = await Car.findById(carId);
 
     if (!car || car.status !== "active") {
@@ -31,6 +32,12 @@ const createConversation = async (req, res) => {
         car: carId,
       });
     }
+
+    conversation = await Conversation.findById(conversation._id)
+      .populate("buyer", "name createdAt")
+      .populate("seller", "name createdAt")
+      .populate("car", "brand model variant price images status")
+      .lean();
 
     res.status(200).json({ conversation });
   } catch (error) {

@@ -8,7 +8,8 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "lint": "eslint .",
-    "create:razorpay-plan": "node src/scripts/createRazorpayPlan.js"
+    "create:razorpay-plan": "node src/scripts/createRazorpayPlan.js",
+    "seed:cars": "node src/scripts/seedCars.js"
   },
   "keywords": [],
   "author": "zaid",

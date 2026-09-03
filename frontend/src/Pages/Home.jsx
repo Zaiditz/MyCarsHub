@@ -12,24 +12,34 @@ export default function Home() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    getCars()
+    getCars({ limit: 50 })
       .then((response) => setCars(response.data.cars))
-      .catch((err) => setError(err.response?.data?.message || "Failed to load cars"))
+      .catch((err) =>
+        setError(err.response?.data?.message || "Failed to load cars"),
+      )
       .finally(() => setLoading(false));
   }, []);
 
-  const filteredCars = cars.filter((car) => {
-    const term = search.trim().toLowerCase();
-    const matchesSearch = !term || `${car.brand} ${car.model}`.toLowerCase().includes(term);
-    const matchesFuel = fuel === "All" || car.fuelType === fuel;
-    const matchesTransmission = transmission === "All" || car.transmission === transmission;
-    return matchesSearch && matchesFuel && matchesTransmission;
-  });
+const filteredCars = cars.filter((car) => {
+  const term = search.trim().toLowerCase();
+
+  const searchableText = [car.brand, car.model, car.variant, car.city]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  const matchesSearch = !term || searchableText.includes(term);
+  const matchesFuel = fuel === "All" || car.fuelType === fuel;
+  const matchesTransmission =
+    transmission === "All" || car.transmission === transmission;
+
+  return matchesSearch && matchesFuel && matchesTransmission;
+});
 
   return (
     <div className="page-shell">
       <section className="border-b border-gray-200 bg-[#171717] text-white">
-        <div className="mx-auto grid max-w-[1180px] gap-10 px-5 py-20 lg:grid-cols-[1.15fr_.85fr] lg:items-center lg:px-0 lg:py-24">
+        <div className="mx-auto grid max-w-295 gap-10 px-5 py-20 lg:grid-cols-[1.15fr_.85fr] lg:items-center lg:px-0 lg:py-24">
           <div>
             <p className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-gray-400">MyCarsHub marketplace</p>
             <h1 className="max-w-2xl text-4xl font-extrabold tracking-[-0.04em] sm:text-5xl lg:text-6xl">Find a car you actually want.</h1>
@@ -40,7 +50,7 @@ export default function Home() {
             </div>
           </div>
           <div className="hidden lg:block">
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
+            <div className="rounded-2xl border border-white/10 bg-white/4 p-6">
               <p className="text-sm font-medium text-gray-400">A simpler way to shop used cars</p>
               <div className="mt-6 space-y-4">
                 {["Search by what matters to you", "Compare shortlisted cars", "Message the seller directly"].map((item, index) => (
@@ -55,7 +65,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-[1180px] px-5 py-12 lg:px-0 lg:py-16">
+      <section className="mx-auto w-full max-w-295 px-5 py-12 lg:px-0 lg:py-16">
         <div className="surface p-5 sm:p-6">
           <div className="mb-5">
             <h2 className="text-xl font-bold tracking-[-0.02em]">Start your search</h2>
