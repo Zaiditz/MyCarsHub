@@ -20,7 +20,7 @@ const paymentRoutes = require("./routes/paymentRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const { razorpayWebhook } = require("./controllers/paymentController");
 const multer = require("multer");
-
+const userRoutes = require("./routes/userRoutes");
 const Conversation = require("./models/Conversation");
 const Message = require("./models/Message");
 
@@ -42,6 +42,7 @@ app.use("/api/chat", chatRoutes);
 app.use("/api", reportRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/user", userRoutes);
 
 
 app.use((error, req, res, next) => {

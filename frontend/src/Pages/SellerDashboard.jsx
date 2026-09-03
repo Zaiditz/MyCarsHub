@@ -63,7 +63,10 @@ export default function SellerDashboard() {
         subscription_id: details.subscriptionId,
         name: details.name,
         description: "MyCarsHub Pro monthly plan",
-        prefill: details.prefill,
+        prefill: {
+        name: details.prefill?.name || "",
+        email: details.prefill?.email || "",
+       },
         theme: { color: "#111111" },
         handler: async (paymentResponse) => {
           try {
@@ -117,7 +120,10 @@ export default function SellerDashboard() {
         currency: details.currency,
         name: details.name,
         description: "MyCarsHub seller verification fee",
-        prefill: details.prefill,
+        prefill: {
+         name: details.prefill?.name || "",
+        email: details.prefill?.email || "",
+         },
         theme: { color: "#111111" },
         handler: async (paymentResponse) => {
           try {
