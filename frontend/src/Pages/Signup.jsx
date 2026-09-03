@@ -46,7 +46,7 @@ async function onSubmit(data) {
 
   return (
     <div className="page-shell flex items-center justify-center px-5 py-12">
-      <div className="w-full max-w-[430px] rounded-2xl border border-gray-200 bg-white p-7 shadow-sm sm:p-8">
+      <div className="w-full max-w-107.5 rounded-2xl border border-gray-200 bg-white p-7 shadow-sm sm:p-8">
         <div className="mb-7">
           <p className="text-sm font-semibold uppercase tracking-[0.14em] text-gray-400">
             MyCarsHub
