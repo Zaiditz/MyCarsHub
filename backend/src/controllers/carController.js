@@ -116,6 +116,7 @@ const uploadToCloudinary = (fileBuffer) => {
 const getCars = async (req, res) => {
   try {
     const {
+      search,
       brand,
       model,
       city,
@@ -132,6 +133,17 @@ const getCars = async (req, res) => {
     const filter = {
       status: "active",
     };
+
+    if (search?.trim()) {
+      const regex = new RegExp(search.trim(), "i");
+
+      filter.$or = [
+        { brand: regex },
+        { model: regex },
+        { variant: regex },
+        { city: regex },
+      ];
+    }
 
     if (brand) filter.brand = brand;
     if (model) filter.model = model;
@@ -160,7 +172,10 @@ const getCars = async (req, res) => {
 
     const [cars, totalCars] = await Promise.all([
       Car.find(filter)
-        .populate("seller", "name createdAt verificationStatus subscriptionPlan subscriptionStatus")
+        .populate(
+          "seller",
+          "name createdAt verificationStatus subscriptionPlan subscriptionStatus",
+        )
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(itemsPerPage)
