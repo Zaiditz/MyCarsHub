@@ -5,6 +5,7 @@ const http = require("http");
 const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
 const cookie = require("cookie");
+const { apiLimiter } = require("./middleware/rateLimiter");
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use(
 app.post("/api/payments/webhook", express.raw({ type: "application/json" }), razorpayWebhook);
 app.use(express.json());
 app.use(cookieParser());
+app.use("/api", apiLimiter);
 
 app.use("/api/cars", carRoutes);
 app.use("/api/auth", authRoutes);
