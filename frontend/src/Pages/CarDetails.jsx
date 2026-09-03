@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import {
-  getCarById,
-  getCars,
-  reportCar,
-} from "../api/api";
+import { getCarById, getCars, reportCar } from "../api/api";
 import { getRecommendedCars } from "../utils/recommendations";
 import { addToCompare, getCompareCars } from "../utils/compare";
 import CarCard from "../Components/CarCard";
@@ -52,31 +48,34 @@ export default function CarDetails() {
     if (!car) return;
 
     const user = JSON.parse(localStorage.getItem("user") || "null");
+    const userId = user?.id || user?._id;
 
-    if (!user?.id) {
+    if (!userId) {
       setIsSaved(false);
       setIsCompared(false);
       return;
     }
 
     const savedCars = JSON.parse(
-      localStorage.getItem(`savedCars_${user.id}`) || "[]",
+      localStorage.getItem(`savedCars_${userId}`) || "[]",
     );
 
     setIsSaved(savedCars.includes(car._id));
-    setIsCompared(getCompareCars(user.id).includes(car._id));
+    setIsCompared(getCompareCars(userId).includes(car._id));
   }, [car]);
 
   function toggleSave() {
     const user = JSON.parse(localStorage.getItem("user") || "null");
+    const userId = user?.id || user?._id;
 
-    if (!user?.id) {
+    if (!userId) {
       alert("Please login to save cars.");
       return;
     }
 
-    const key = `savedCars_${user.id}`;
+    const key = `savedCars_${userId}`;
     const savedCars = JSON.parse(localStorage.getItem(key) || "[]");
+
     const updated = savedCars.includes(car._id)
       ? savedCars.filter((savedId) => savedId !== car._id)
       : [...savedCars, car._id];
@@ -87,31 +86,34 @@ export default function CarDetails() {
 
   function handleCompare() {
     const user = JSON.parse(localStorage.getItem("user") || "null");
+    const userId = user?.id || user?._id;
 
-    if (!user?.id) {
+    if (!userId) {
       alert("Please login to compare cars.");
       return;
     }
 
-    if (isCompared) return;
+    if (isCompared) {
+      navigate("/compare");
+      return;
+    }
 
-    if (addToCompare(car._id, user.id)) {
+    if (addToCompare(car._id, userId)) {
       setIsCompared(true);
+      navigate("/compare");
     }
   }
 
   async function handleReport() {
     const user = JSON.parse(localStorage.getItem("user") || "null");
+    const userId = user?.id || user?._id;
 
-    if (!user?.id) {
+    if (!userId) {
       alert("Please login to report a listing.");
       return;
     }
 
-    const reason = window.prompt(
-      "Why are you reporting this listing?",
-      "",
-    );
+    const reason = window.prompt("Why are you reporting this listing?", "");
 
     if (!reason?.trim()) return;
 
@@ -170,12 +172,12 @@ export default function CarDetails() {
 
         <div className="surface mt-5 overflow-hidden">
           <div className="grid lg:grid-cols-[1.05fr_.95fr]">
-            <div className="flex min-h-[360px] items-center justify-center bg-[#f1f1ef] p-5 sm:min-h-[500px]">
+            <div className="flex min-h-90 items-center justify-center bg-[#f1f1ef] p-5 sm:min-h-125">
               {car.images?.length ? (
                 <img
                   src={car.images[0]}
                   alt={`${car.brand} ${car.model}`}
-                  className="max-h-[500px] w-full object-contain"
+                  className="max-h-125 w-full object-contain"
                 />
               ) : (
                 <span className="text-sm text-gray-400">
@@ -233,9 +235,13 @@ export default function CarDetails() {
                   Seller
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <p className="font-semibold">{car.seller?.name || "Seller"}</p>
+                  <p className="font-semibold">
+                    {car.seller?.name || "Seller"}
+                  </p>
                   {car.seller?.verificationStatus === "verified" && (
-                    <span className="rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px] font-semibold text-gray-600">✓ Verified Seller</span>
+                    <span className="rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px] font-semibold text-gray-600">
+                      ✓ Verified Seller
+                    </span>
                   )}
                 </div>
                 {memberSince && (
@@ -262,17 +268,12 @@ export default function CarDetails() {
               {!isOwner && (
                 <div className="mt-8 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
                   <button
-                    onClick={() =>
-                      navigate(`/chat/car/${car._id}`)
-                    }
+                    onClick={() => navigate(`/chat/car/${car._id}`)}
                     className="primary-button"
                   >
                     Chat with Seller
                   </button>
-                  <button
-                    onClick={toggleSave}
-                    className="secondary-button"
-                  >
+                  <button onClick={toggleSave} className="secondary-button">
                     {isSaved ? "Saved" : "Save"}
                   </button>
                   <button

@@ -1,13 +1,32 @@
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { addToCompare, getCompareCars } from "../utils/compare";
 
 export default function CarCard({ car }) {
-  const [isCompared, setIsCompared] = useState(() => getCompareCars().includes(car._id));
+  const navigate = useNavigate();
+
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const userId = user?.id || user?._id;
+
+  const [isCompared, setIsCompared] = useState(() =>
+    userId ? getCompareCars(userId).includes(car._id) : false,
+  );
 
   function handleCompare() {
-    if (isCompared) return;
-    if (addToCompare(car._id)) setIsCompared(true);
+    if (!userId) {
+      alert("Please login to compare cars.");
+      return;
+    }
+
+    if (isCompared) {
+      navigate("/compare");
+      return;
+    }
+
+    if (addToCompare(car._id, userId)) {
+      setIsCompared(true);
+      navigate("/compare");
+    }
   }
 
   return (
@@ -33,15 +52,34 @@ export default function CarCard({ car }) {
               <p className="truncate text-lg font-bold tracking-[-0.015em]">
                 {car.brand} {car.model}
               </p>
+
               {car.seller?.verificationStatus === "verified" && (
-                <span className="shrink-0 text-[11px] font-semibold text-gray-500" title="Verified seller">✓ Verified</span>
+                <span
+                  className="shrink-0 text-[11px] font-semibold text-gray-500"
+                  title="Verified seller"
+                >
+                  ✓ Verified
+                </span>
               )}
-              {car.seller?.subscriptionPlan === "pro" && car.seller?.subscriptionStatus === "active" && (
-                <span className="shrink-0 text-[11px] font-semibold text-gray-400" title="Pro seller">Pro</span>
-              )}
+
+              {car.seller?.subscriptionPlan === "pro" &&
+                car.seller?.subscriptionStatus === "active" && (
+                  <span
+                    className="shrink-0 text-[11px] font-semibold text-gray-400"
+                    title="Pro seller"
+                  >
+                    Pro
+                  </span>
+                )}
             </div>
-            {car.variant && <p className="mt-1 truncate text-sm text-gray-500">{car.variant}</p>}
+
+            {car.variant && (
+              <p className="mt-1 truncate text-sm text-gray-500">
+                {car.variant}
+              </p>
+            )}
           </div>
+
           <span className="shrink-0 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600">
             {car.city}
           </span>
@@ -56,14 +94,17 @@ export default function CarCard({ car }) {
         </p>
 
         <div className="mt-5 grid grid-cols-[1fr_auto] gap-2">
-          <Link to={`/cars/${car._id}`} className="primary-button w-full py-2.5 text-sm">
+          <Link
+            to={`/cars/${car._id}`}
+            className="primary-button w-full py-2.5 text-sm"
+          >
             View Details
           </Link>
+
           <button
             type="button"
             onClick={handleCompare}
-            disabled={isCompared}
-            className="secondary-button px-3 py-2.5 text-sm disabled:cursor-default disabled:bg-gray-100 disabled:text-gray-500"
+            className="secondary-button px-3 py-2.5 text-sm"
           >
             {isCompared ? "Compared" : "Compare"}
           </button>
