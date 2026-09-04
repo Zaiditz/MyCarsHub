@@ -64,7 +64,7 @@ app.use((error, req, res, next) => {
 
 app.get("/", (req, res) => {
   res.json({
-    message: "MyCarsHub API is running",
+    message: "working",
   });
 });
 

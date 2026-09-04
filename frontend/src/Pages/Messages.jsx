@@ -48,7 +48,9 @@ export default function Messages() {
   }, [authLoading, user]);
 
   function getOtherUser(conversation) {
-    return conversation.buyer?._id === user?.id
+    const userId = user?.id || user?._id;
+
+    return conversation.buyer?._id?.toString() === userId?.toString()
       ? conversation.seller
       : conversation.buyer;
   }
@@ -174,7 +176,8 @@ export default function Messages() {
                     <p className="mt-2 truncate text-sm text-gray-500">
                       {lastMessage
                         ? `${
-                            lastMessage.sender?._id === user?.id ? "You: " : ""
+                            lastMessage.sender?._id?.toString() ===
+                            (user?.id || user?._id)?.toString()
                           }${lastMessage.text}`
                         : "No messages yet"}
                     </p>
