@@ -48,11 +48,9 @@ export default function Messages() {
   }, [authLoading, user]);
 
   function getOtherUser(conversation) {
-    const userId = user?.id || user?._id;
-
-    return conversation.buyer?._id?.toString() === userId?.toString()
-      ? conversation.seller
-      : conversation.buyer;
+    const currentUserId = (user?.id || user?._id)?.toString();
+    const buyerId = conversation.buyer?._id?.toString();
+    return buyerId === currentUserId ? conversation.seller : conversation.buyer;
   }
 
   function formatDate(date) {
@@ -178,6 +176,8 @@ export default function Messages() {
                         ? `${
                             lastMessage.sender?._id?.toString() ===
                             (user?.id || user?._id)?.toString()
+                              ? "You: "
+                              : ""
                           }${lastMessage.text}`
                         : "No messages yet"}
                     </p>

@@ -11,7 +11,7 @@ export default function Chat() {
 
   const { user, loading: authLoading } = useAuth();
 
-  const userId = user?.id || user?._id;
+  const userId = (user?.id || user?._id)?.toString();
 
   const [conversation, setConversation] = useState(null);
 
@@ -238,8 +238,9 @@ export default function Chat() {
             ) : (
               <div className="space-y-3">
                 {messages.map((message) => {
-                  const mine =
-                    message.sender?._id?.toString() === userId?.toString();
+                  const senderId = message.sender?._id?.toString();
+
+                  const mine = senderId === userId;
 
                   return (
                     <div
