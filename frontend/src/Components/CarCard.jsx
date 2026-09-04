@@ -26,7 +26,7 @@ export default function CarCard({ car }) {
         const cars = response.data.cars || [];
 
         setIsCompared(cars.some((item) => item._id === car._id));
-      } catch (error) {
+      } catch {
         if (active) {
           setIsCompared(false);
         }

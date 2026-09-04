@@ -253,7 +253,7 @@ export default function SellCar() {
         formData.append("images", image);
       });
 
-      const response = await createCar(formData);
+      await createCar(formData);
 
       navigate("/cars");
     } catch (error) {

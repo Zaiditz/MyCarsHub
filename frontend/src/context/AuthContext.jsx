@@ -15,7 +15,7 @@ export function AuthProvider({ children }) {
       setUser(response.data.user);
 
       return response.data.user;
-    } catch (error) {
+    } catch  {
       setUser(null);
       return null;
     }

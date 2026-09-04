@@ -26,7 +26,8 @@ export default function Signup() {
       setLoading(true);
       setServerError("");
 
-      const { confirmPassword, ...userData } = data;
+      const userData = { ...data };
+      delete userData.confirmPassword;
 
       await registerUser(userData);
 
