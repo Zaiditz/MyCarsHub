@@ -6,6 +6,7 @@ const publicUser = (user) => ({
   id: user._id,
   name: user.name,
   role: user.role,
+  createdAt: user.createdAt,
   subscriptionPlan: user.subscriptionPlan,
   subscriptionStatus: user.subscriptionStatus,
   subscriptionCancelAtCycleEnd: user.subscriptionCancelAtCycleEnd,

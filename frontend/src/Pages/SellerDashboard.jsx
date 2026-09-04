@@ -128,6 +128,7 @@ export default function SellerDashboard() {
         handler: async (paymentResponse) => {
           try {
             await verifyVerificationPayment(paymentResponse);
+            setError("");
             setMessage(
               "Payment received. Your verification request is now waiting for admin review.",
             );
