@@ -18,13 +18,17 @@ const reportCar = async (req, res) => {
     }
 
     if (car.seller.toString() === userId) {
-      return res.status(400).json({ message: "You cannot report your own listing" });
+      return res
+        .status(400)
+        .json({ message: "You cannot report your own listing" });
     }
 
     const existingReport = await Report.findOne({ car: id, reporter: userId });
 
     if (existingReport) {
-      return res.status(409).json({ message: "You have already reported this listing" });
+      return res
+        .status(409)
+        .json({ message: "You have already reported this listing" });
     }
 
     await Report.create({ car: id, reporter: userId, reason: reason.trim() });

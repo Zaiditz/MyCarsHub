@@ -320,7 +320,6 @@ const cars = [
 const run = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log("MongoDB connected");
 
     const sellerIds = [];
 
@@ -339,10 +338,6 @@ const run = async () => {
           subscriptionStatus: "inactive",
           verificationStatus: "unverified",
         });
-
-        console.log(`Created seller: ${seller.name}`);
-      } else {
-        console.log(`Seller already exists: ${seller.name}`);
       }
 
       sellerIds.push(existingSeller._id);
@@ -353,9 +348,6 @@ const run = async () => {
     });
 
     if (existingDemoCars > 0) {
-      console.log(
-        `Demo cars already exist (${existingDemoCars}). Nothing to add.`,
-      );
       await mongoose.disconnect();
       return;
     }
@@ -369,9 +361,6 @@ const run = async () => {
 
     await Car.insertMany(carsToInsert);
 
-    console.log(`Successfully added ${carsToInsert.length} demo cars.`);
-    console.log("All demo cars are active and visible on the marketplace.");
-
     await mongoose.disconnect();
   } catch (error) {
     console.error("SEED CARS ERROR:", error);
@@ -379,4 +368,5 @@ const run = async () => {
     process.exit(1);
   }
 };
+
 run();

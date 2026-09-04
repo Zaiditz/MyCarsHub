@@ -255,8 +255,6 @@ export default function SellCar() {
 
       const response = await createCar(formData);
 
-      console.log("CAR CREATED:", response.data);
-
       navigate("/cars");
     } catch (error) {
       console.error("CREATE CAR ERROR:", error);
@@ -270,7 +268,6 @@ export default function SellCar() {
   return (
     <div className="min-h-screen bg-[#f7f7f5] px-4 py-8 sm:px-6 sm:py-12">
       <div className="mx-auto max-w-4xl">
-        {/* HEADER */}
         <div className="mb-8">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-400">
             Sell on MyCarsHub
@@ -292,7 +289,6 @@ export default function SellCar() {
           </div>
         </div>
 
-        {/* PROGRESS */}
         <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-4 sm:p-5">
           <div className="flex items-center">
             {STEPS.map((item, index) => {
@@ -339,7 +335,6 @@ export default function SellCar() {
           </div>
         </div>
 
-        {/* ERROR */}
         {error && (
           <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
@@ -347,7 +342,6 @@ export default function SellCar() {
         )}
 
         <form onSubmit={handleSubmit}>
-          {/* STEP 1 */}
           {step === 1 && (
             <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
               <div className="mb-7">
@@ -442,7 +436,6 @@ export default function SellCar() {
             </section>
           )}
 
-          {/* STEP 2 */}
           {step === 2 && (
             <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
               <div className="mb-7">
@@ -460,7 +453,6 @@ export default function SellCar() {
               </div>
 
               <div className="space-y-6">
-                {/* PRICE */}
                 <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5">
                   <label className="block text-sm font-semibold">
                     Selling price
@@ -488,7 +480,6 @@ export default function SellCar() {
                   </p>
                 </div>
 
-                {/* USAGE */}
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div>
                     <label className="mb-2 block text-sm font-semibold">
@@ -529,7 +520,6 @@ export default function SellCar() {
                   </div>
                 </div>
 
-                {/* FUEL / TRANSMISSION */}
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div>
                     <label className="mb-2 block text-sm font-semibold">
@@ -567,7 +557,6 @@ export default function SellCar() {
                   </div>
                 </div>
 
-                {/* CITY */}
                 <div>
                   <label className="mb-2 block text-sm font-semibold">
                     Location
@@ -583,7 +572,6 @@ export default function SellCar() {
                   />
                 </div>
 
-                {/* DESCRIPTION */}
                 <div>
                   <div className="mb-2 flex items-center justify-between">
                     <label className="block text-sm font-semibold">
@@ -627,7 +615,6 @@ export default function SellCar() {
             </section>
           )}
 
-          {/* STEP 3 */}
           {step === 3 && (
             <section className="space-y-6">
               <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
@@ -646,7 +633,6 @@ export default function SellCar() {
                   </p>
                 </div>
 
-                {/* UPLOAD AREA */}
                 {images.length < MAX_IMAGES && (
                   <label
                     htmlFor="car-images"
@@ -679,7 +665,6 @@ export default function SellCar() {
                   className="hidden"
                 />
 
-                {/* PREVIEWS */}
                 {previews.length > 0 && (
                   <div className="mt-5">
                     <div className="mb-3 flex items-center justify-between">
@@ -733,7 +718,6 @@ export default function SellCar() {
                 )}
               </div>
 
-              {/* LISTING PREVIEW */}
               <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
                 <div className="mb-5">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">
@@ -801,7 +785,6 @@ export default function SellCar() {
                 </div>
               </div>
 
-              {/* ACTIONS */}
               <div className="flex items-center justify-between rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
                 <button
                   type="button"

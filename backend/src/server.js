@@ -31,7 +31,12 @@ app.use(
   }),
 );
 
-app.post("/api/payments/webhook", express.raw({ type: "application/json" }), razorpayWebhook);
+app.post(
+  "/api/payments/webhook",
+  express.raw({ type: "application/json" }),
+  razorpayWebhook,
+);
+
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api", apiLimiter);
@@ -44,14 +49,18 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/user", userRoutes);
 
-
 app.use((error, req, res, next) => {
   if (error instanceof multer.MulterError) {
     if (error.code === "LIMIT_FILE_SIZE") {
-      return res.status(400).json({ message: "Each image must be 5 MB or smaller" });
+      return res
+        .status(400)
+        .json({ message: "Each image must be 5 MB or smaller" });
     }
+
     if (error.code === "LIMIT_UNEXPECTED_FILE") {
-      return res.status(400).json({ message: "You can upload a maximum of 6 images" });
+      return res
+        .status(400)
+        .json({ message: "You can upload a maximum of 6 images" });
     }
   }
 
@@ -91,7 +100,6 @@ const startServer = async () => {
       }
 
       const parsedCookies = cookie.parse(cookies);
-
       const token = parsedCookies.token;
 
       if (!token) {
@@ -111,8 +119,6 @@ const startServer = async () => {
   });
 
   io.on("connection", (socket) => {
-    console.log("Authenticated user connected:", socket.userId, socket.id);
-
     socket.on("joinConversation", async (conversationId) => {
       try {
         const conversation = await Conversation.findById(conversationId);
@@ -126,16 +132,10 @@ const startServer = async () => {
           conversation.seller.toString() === socket.userId;
 
         if (!isParticipant) {
-          console.log("Unauthorized conversation access:", socket.userId);
-
           return;
         }
 
         socket.join(conversationId);
-
-        console.log(
-          `User ${socket.userId} joined conversation ${conversationId}`,
-        );
       } catch (error) {
         console.error("JOIN CONVERSATION ERROR:", error);
       }
@@ -158,8 +158,6 @@ const startServer = async () => {
           conversation.seller.toString() === socket.userId;
 
         if (!isParticipant) {
-          console.log("Unauthorized message attempt:", socket.userId);
-
           return;
         }
 
@@ -180,15 +178,8 @@ const startServer = async () => {
         console.error("SEND MESSAGE ERROR:", error);
       }
     });
-
-    socket.on("disconnect", () => {
-      console.log("User disconnected:", socket.userId, socket.id);
-    });
   });
 
-  server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+  server.listen(PORT);
 };
-
 startServer();
