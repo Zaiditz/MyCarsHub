@@ -8,7 +8,7 @@ const razorpay = new Razorpay({
 
 async function main() {
   const amount = Number(process.env.PRO_MONTHLY_AMOUNT || 299) * 100;
-  const plan = await razorpay.plans.create({
+  await razorpay.plans.create({
     period: "monthly",
     interval: 1,
     item: {
