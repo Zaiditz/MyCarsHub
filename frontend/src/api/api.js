@@ -18,6 +18,14 @@ export const updateCar = (id, car) => API.put(`/cars/${id}`, car);
 export const deleteCar = (id) => API.delete(`/cars/${id}`);
 export const createCar = (carData) => API.post("/cars", carData);
 
+export const getSavedCars = () => API.get("/user/saved");
+export const saveCar = (carId) => API.post(`/user/saved/${carId}`);
+export const removeSavedCar = (carId) => API.delete(`/user/saved/${carId}`);
+export const getCompareCars = () => API.get("/user/compare");
+export const addCompareCar = (carId) => API.post(`/user/compare/${carId}`);
+export const removeCompareCar = (carId) => API.delete(`/user/compare/${carId}`);
+export const clearCompareCars = () => API.delete("/user/compare");
+
 export const getConversation = (conversationId) =>
   API.get(`/chat/conversations/${conversationId}`);
 export const createConversation = (carId) =>

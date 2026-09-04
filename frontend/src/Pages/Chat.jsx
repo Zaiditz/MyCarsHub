@@ -1,27 +1,39 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router";
 import { io } from "socket.io-client";
-import {
-  createConversation,
-  getConversation,
-  getMessages,
-} from "../api/api";
+
+import { createConversation, getConversation, getMessages } from "../api/api";
+
+import { useAuth } from "../context/AuthContext";
 
 export default function Chat() {
   const { carId, conversationId: routeConversationId } = useParams();
-  const user = JSON.parse(localStorage.getItem("user") || "null");
+
+  const { user, loading: authLoading } = useAuth();
+
   const userId = user?.id;
 
   const [conversation, setConversation] = useState(null);
-  const [conversationId, setConversationId] = useState(routeConversationId || null);
+
+  const [conversationId, setConversationId] = useState(
+    routeConversationId || null,
+  );
+
   const [messages, setMessages] = useState([]);
+
   const [text, setText] = useState("");
+
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState("");
+
   const socketRef = useRef(null);
+
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
+    if (authLoading || !user) return;
+
     let active = true;
     let socket;
 
@@ -34,22 +46,33 @@ export default function Chat() {
 
         if (routeConversationId) {
           const response = await getConversation(routeConversationId);
+
           currentConversation = response.data.conversation;
         } else {
           const response = await createConversation(carId);
+
           currentConversation = response.data.conversation;
         }
 
         if (!active) return;
 
         setConversation(currentConversation);
+
         setConversationId(currentConversation._id);
 
         const messagesResponse = await getMessages(currentConversation._id);
-        if (!active) return;
-        setMessages(messagesResponse.data.messages);
 
-        socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:3000", { withCredentials: true });
+        if (!active) return;
+
+        setMessages(messagesResponse.data.messages || []);
+
+        socket = io(
+          import.meta.env.VITE_SOCKET_URL || "http://localhost:3000",
+          {
+            withCredentials: true,
+          },
+        );
+
         socketRef.current = socket;
 
         socket.on("connect", () => {
@@ -72,7 +95,9 @@ export default function Chat() {
           setError(err.response?.data?.message || "Failed to open chat");
         }
       } finally {
-        if (active) setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     }
 
@@ -80,20 +105,27 @@ export default function Chat() {
 
     return () => {
       active = false;
+
       socket?.disconnect();
+
       socketRef.current = null;
     };
-  }, [carId, routeConversationId]);
+  }, [carId, routeConversationId, authLoading, user]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
   }, [messages]);
 
   function sendMessage(event) {
     event.preventDefault();
+
     const trimmed = text.trim();
 
-    if (!trimmed || !conversationId || !socketRef.current?.connected) return;
+    if (!trimmed || !conversationId || !socketRef.current?.connected) {
+      return;
+    }
 
     socketRef.current.emit("sendMessage", {
       conversationId,
@@ -105,6 +137,7 @@ export default function Chat() {
 
   function formatTime(date) {
     if (!date) return "";
+
     return new Date(date).toLocaleTimeString("en-IN", {
       hour: "numeric",
       minute: "2-digit",
@@ -113,15 +146,30 @@ export default function Chat() {
 
   function getOtherUser() {
     if (!conversation) return null;
+
     return conversation.buyer?._id === userId
       ? conversation.seller
       : conversation.buyer;
   }
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="page-shell flex items-center justify-center">
         <p className="text-sm text-gray-500">Opening chat...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="page-shell flex items-center justify-center px-5">
+        <div className="surface max-w-md p-7 text-center">
+          <p className="font-semibold">Please login to use chat.</p>
+
+          <Link to="/login" className="primary-button mt-5">
+            Login
+          </Link>
+        </div>
       </div>
     );
   }
@@ -131,6 +179,7 @@ export default function Chat() {
       <div className="page-shell flex items-center justify-center px-5">
         <div className="surface max-w-md p-7 text-center">
           <p className="font-semibold">{error}</p>
+
           <Link to="/messages" className="primary-button mt-5">
             Back to Messages
           </Link>
@@ -157,24 +206,30 @@ export default function Chat() {
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">
               Conversation
             </p>
+
             <h1 className="mt-1 text-xl font-bold">
               Chat with {otherUser?.name || "User"}
             </h1>
+
             <p className="mt-1 text-sm text-gray-500">
               {car
-                ? `${car.brand} ${car.model}${car.variant ? ` · ${car.variant}` : ""}`
+                ? `${car.brand} ${car.model}${
+                    car.variant ? ` · ${car.variant}` : ""
+                  }`
                 : "Car listing"}
             </p>
           </header>
 
-          <div className="h-[520px] overflow-y-auto bg-[#fbfbfa] px-4 py-5 sm:px-6">
+          <div className="h-130 overflow-y-auto bg-[#fbfbfa] px-4 py-5 sm:px-6">
             {messages.length === 0 ? (
               <div className="flex h-full items-center justify-center text-center">
                 <div>
                   <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-sm font-bold text-gray-500">
                     M
                   </div>
+
                   <p className="mt-3 font-medium">No messages yet</p>
+
                   <p className="mt-1 text-sm text-gray-500">
                     Send a message to start the conversation.
                   </p>
@@ -188,7 +243,9 @@ export default function Chat() {
                   return (
                     <div
                       key={message._id}
-                      className={`flex ${mine ? "justify-end" : "justify-start"}`}
+                      className={`flex ${
+                        mine ? "justify-end" : "justify-start"
+                      }`}
                     >
                       <div
                         className={`flex max-w-[82%] flex-col ${
@@ -200,6 +257,7 @@ export default function Chat() {
                             {message.sender?.name || "User"}
                           </p>
                         )}
+
                         <div
                           className={`rounded-2xl px-4 py-3 text-sm leading-5 ${
                             mine
@@ -209,6 +267,7 @@ export default function Chat() {
                         >
                           <p className="wrap-break-word">{message.text}</p>
                         </div>
+
                         <p className="mt-1 px-1 text-[11px] text-gray-400">
                           {formatTime(message.createdAt)}
                         </p>
@@ -216,6 +275,7 @@ export default function Chat() {
                     </div>
                   );
                 })}
+
                 <div ref={messagesEndRef} />
               </div>
             )}
@@ -232,6 +292,7 @@ export default function Chat() {
               placeholder="Write a message..."
               className="field"
             />
+
             <button
               type="submit"
               disabled={!text.trim()}

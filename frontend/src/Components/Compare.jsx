@@ -1,53 +1,60 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { getCars } from "../api/api";
-import { getCompareCars, removeFromCompare } from "../utils/compare";
+import { getCompareCars, removeCompareCar, clearCompareCars } from "../api/api";
 
 export default function Compare() {
-  const [compareIds, setCompareIds] = useState(getCompareCars);
-  const [cars, setCars] = useState([]);
+  const [compareCars, setCompareCars] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchCars() {
+    let active = true;
+
+    async function fetchCompareCars() {
       try {
-        const response = await getCars({ limit: 50 });
-        const availableCars = response.data.cars;
-        setCars(availableCars);
+        const response = await getCompareCars();
 
-        const user = JSON.parse(localStorage.getItem("user") || "null");
-        if (user?.id) {
-          const availableIds = new Set(availableCars.map((car) => car._id));
-          const cleanedIds = compareIds.filter((id) => availableIds.has(id));
-
-          if (cleanedIds.length !== compareIds.length) {
-            localStorage.setItem(
-              `compareCars_${user.id}`,
-              JSON.stringify(cleanedIds),
-            );
-            setCompareIds(cleanedIds);
-          }
+        if (active) {
+          setCompareCars(response.data.cars || []);
         }
       } catch (error) {
-        console.error("GET CARS ERROR:", error);
+        console.error("GET COMPARE CARS ERROR:", error);
+
+        if (active) {
+          setCompareCars([]);
+        }
       } finally {
-        setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     }
 
-    fetchCars();
+    fetchCompareCars();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
-  const compareCars = cars.filter((car) => compareIds.includes(car._id));
+  async function remove(carId) {
+    try {
+      await removeCompareCar(carId);
 
-  function remove(carId) {
-    removeFromCompare(carId);
-    setCompareIds((prev) => prev.filter((id) => id !== carId));
+      setCompareCars((prev) => prev.filter((car) => car._id !== carId));
+    } catch (error) {
+      alert(
+        error.response?.data?.message || "Failed to remove car from comparison",
+      );
+    }
   }
 
-  function clear() {
-    compareIds.forEach((carId) => removeFromCompare(carId));
-    setCompareIds([]);
+  async function clear() {
+    try {
+      await clearCompareCars();
+      setCompareCars([]);
+    } catch (error) {
+      alert(error.response?.data?.message || "Failed to clear comparison");
+    }
   }
 
   if (loading) {
@@ -66,11 +73,14 @@ export default function Compare() {
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-gray-400">
               Shortlist
             </p>
+
             <h1 className="section-title mt-2">Compare Cars</h1>
+
             <p className="section-copy">
               Put your shortlisted cars side by side.
             </p>
           </div>
+
           <Link
             to="/cars"
             className="text-sm font-semibold text-gray-600 hover:text-black"
@@ -82,9 +92,11 @@ export default function Compare() {
         {!compareCars.length ? (
           <div className="surface p-12 text-center">
             <h2 className="text-xl font-bold">No cars selected</h2>
+
             <p className="mt-2 text-sm text-gray-500">
               Add cars to comparison while browsing listings.
             </p>
+
             <Link to="/cars" className="primary-button mt-6">
               Browse Cars
             </Link>
@@ -101,22 +113,25 @@ export default function Compare() {
             </div>
 
             <div className="surface overflow-x-auto">
-              <table className="w-full min-w-[650px] border-collapse text-left">
+              <table className="w-full min-w-162.5 border-collapse text-left">
                 <thead>
                   <tr className="border-b border-gray-200 bg-gray-50/80">
                     <th className="p-5 text-xs font-semibold uppercase tracking-wider text-gray-500">
                       Specification
                     </th>
+
                     {compareCars.map((car) => (
                       <th key={car._id} className="min-w-48 p-5 align-top">
                         <p className="font-bold">
                           {car.brand} {car.model}
                         </p>
+
                         {car.variant && (
                           <p className="mt-1 text-sm font-normal text-gray-500">
                             {car.variant}
                           </p>
                         )}
+
                         <button
                           onClick={() => remove(car._id)}
                           className="mt-3 text-xs font-semibold text-gray-500 hover:text-red-600"
@@ -127,6 +142,7 @@ export default function Compare() {
                     ))}
                   </tr>
                 </thead>
+
                 <tbody>
                   {[
                     ["Price", (car) => `₹${car.price.toLocaleString("en-IN")}`],
@@ -151,6 +167,7 @@ export default function Compare() {
                       }
                     >
                       <td className="p-5 text-sm font-semibold">{label}</td>
+
                       {compareCars.map((car) => (
                         <td key={car._id} className="p-5 text-sm text-gray-600">
                           {value(car)}

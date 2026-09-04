@@ -1,48 +1,46 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
-import { registerUser, getMe } from "../api/api";
+import { registerUser } from "../api/api";
+import { useAuth } from "../context/AuthContext";
 
 export default function Signup() {
   const navigate = useNavigate();
+  const { refreshUser } = useAuth();
+
   const [loading, setLoading] = useState(false);
+
   const [serverError, setServerError] = useState("");
+
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors },
   } = useForm();
+
   const password = watch("password");
 
-async function onSubmit(data) {
-  try {
-    setLoading(true);
-    setServerError("");
+  async function onSubmit(data) {
+    try {
+      setLoading(true);
+      setServerError("");
 
-    const { confirmPassword, ...userData } = data;
+      const { confirmPassword, ...userData } = data;
 
-    const response = await registerUser(userData);
+      await registerUser(userData);
 
-    let user = response.data.user;
+      await refreshUser();
 
-    if (!user) {
-      const meResponse = await getMe();
-      user = meResponse.data.user;
+      navigate("/");
+    } catch (error) {
+      setServerError(
+        error.response?.data?.message || "Failed to create account",
+      );
+    } finally {
+      setLoading(false);
     }
-
-    if (user) {
-      localStorage.setItem("user", JSON.stringify(user));
-      window.dispatchEvent(new Event("authchange"));
-    }
-
-    navigate("/");
-  } catch (error) {
-    setServerError(error.response?.data?.message || "Failed to create account");
-  } finally {
-    setLoading(false);
   }
-}
 
   return (
     <div className="page-shell flex items-center justify-center px-5 py-12">
@@ -51,35 +49,45 @@ async function onSubmit(data) {
           <p className="text-sm font-semibold uppercase tracking-[0.14em] text-gray-400">
             MyCarsHub
           </p>
+
           <h1 className="mt-3 text-3xl font-extrabold tracking-[-0.03em]">
             Create your account
           </h1>
+
           <p className="mt-2 text-sm leading-6 text-gray-500">
             Join MyCarsHub to buy and sell cars.
           </p>
         </div>
+
         {serverError && (
           <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {serverError}
           </div>
         )}
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <Field label="Name" error={errors.name?.message}>
             <input
               type="text"
               placeholder="Your name"
-              {...register("name", { required: "Name is required" })}
+              {...register("name", {
+                required: "Name is required",
+              })}
               className="field"
             />
           </Field>
+
           <Field label="Email" error={errors.email?.message}>
             <input
               type="email"
               placeholder="you@example.com"
-              {...register("email", { required: "Email is required" })}
+              {...register("email", {
+                required: "Email is required",
+              })}
               className="field"
             />
           </Field>
+
           <Field label="Password" error={errors.password?.message}>
             <input
               type="password"
@@ -94,6 +102,7 @@ async function onSubmit(data) {
               className="field"
             />
           </Field>
+
           <Field
             label="Confirm Password"
             error={errors.confirmPassword?.message}
@@ -109,6 +118,7 @@ async function onSubmit(data) {
               className="field"
             />
           </Field>
+
           <button
             type="submit"
             disabled={loading}
@@ -117,6 +127,7 @@ async function onSubmit(data) {
             {loading ? "Creating account..." : "Create Account"}
           </button>
         </form>
+
         <p className="mt-6 text-center text-sm text-gray-500">
           Already have an account?{" "}
           <Link
@@ -135,7 +146,9 @@ function Field({ label, error, children }) {
   return (
     <div>
       <label className="mb-2 block text-sm font-semibold">{label}</label>
+
       {children}
+
       {error && <p className="mt-1.5 text-sm text-red-600">{error}</p>}
     </div>
   );

@@ -1,9 +1,12 @@
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
 import { loginUser } from "../api/api";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { refreshUser } = useAuth();
+
   const {
     register,
     handleSubmit,
@@ -12,10 +15,10 @@ export default function Login() {
 
   async function onSubmit(data) {
     try {
-      const response = await loginUser(data);
-      if (response.data.user)
-        localStorage.setItem("user", JSON.stringify(response.data.user));
-      window.dispatchEvent(new Event("authchange"));
+      await loginUser(data);
+
+      await refreshUser();
+
       navigate("/");
     } catch (error) {
       alert(error.response?.data?.message || "Login failed");
@@ -29,22 +32,29 @@ export default function Login() {
           <input
             type="email"
             placeholder="you@example.com"
-            {...register("email", { required: "Email is required" })}
+            {...register("email", {
+              required: "Email is required",
+            })}
             className="field"
           />
         </Field>
+
         <Field label="Password" error={errors.password?.message}>
           <input
             type="password"
             placeholder="Enter your password"
-            {...register("password", { required: "Password is required" })}
+            {...register("password", {
+              required: "Password is required",
+            })}
             className="field"
           />
         </Field>
+
         <button type="submit" className="primary-button w-full py-3">
           Login
         </button>
       </form>
+
       <p className="mt-6 text-center text-sm text-gray-500">
         Don't have an account?{" "}
         <Link to="/signup" className="font-semibold text-black hover:underline">
@@ -63,11 +73,14 @@ function AuthLayout({ title, copy, children }) {
           <p className="text-sm font-semibold uppercase tracking-[0.14em] text-gray-400">
             MyCarsHub
           </p>
+
           <h1 className="mt-3 text-3xl font-extrabold tracking-[-0.03em]">
             {title}
           </h1>
+
           <p className="mt-2 text-sm leading-6 text-gray-500">{copy}</p>
         </div>
+
         {children}
       </div>
     </div>
@@ -78,7 +91,9 @@ function Field({ label, error, children }) {
   return (
     <div>
       <label className="mb-2 block text-sm font-semibold">{label}</label>
+
       {children}
+
       {error && <p className="mt-1.5 text-sm text-red-600">{error}</p>}
     </div>
   );

@@ -1,20 +1,51 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { addToCompare, getCompareCars } from "../utils/compare";
+import { addCompareCar, getCompareCars } from "../api/api";
+import { useAuth } from "../context/AuthContext";
 
 export default function CarCard({ car }) {
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
 
-  const user = JSON.parse(localStorage.getItem("user") || "null");
-  const userId = user?.id || user?._id;
+  const [isCompared, setIsCompared] = useState(false);
 
-  const [isCompared, setIsCompared] = useState(() =>
-    userId ? getCompareCars(userId).includes(car._id) : false,
-  );
+  useEffect(() => {
+    let active = true;
 
-  function handleCompare() {
-    if (!userId) {
+    async function checkCompared() {
+      if (!user) {
+        setIsCompared(false);
+        return;
+      }
+
+      try {
+        const response = await getCompareCars();
+
+        if (!active) return;
+
+        const cars = response.data.cars || [];
+
+        setIsCompared(cars.some((item) => item._id === car._id));
+      } catch (error) {
+        if (active) {
+          setIsCompared(false);
+        }
+      }
+    }
+
+    if (!authLoading) {
+      checkCompared();
+    }
+
+    return () => {
+      active = false;
+    };
+  }, [user, authLoading, car._id]);
+
+  async function handleCompare() {
+    if (!user) {
       alert("Please login to compare cars.");
+      navigate("/login");
       return;
     }
 
@@ -23,9 +54,13 @@ export default function CarCard({ car }) {
       return;
     }
 
-    if (addToCompare(car._id, userId)) {
+    try {
+      await addCompareCar(car._id);
+
       setIsCompared(true);
       navigate("/compare");
+    } catch (error) {
+      alert(error.response?.data?.message || "Failed to add car to comparison");
     }
   }
 

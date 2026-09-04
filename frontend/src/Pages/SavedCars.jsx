@@ -1,53 +1,50 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { getCars } from "../api/api";
+import { getSavedCars, removeSavedCar } from "../api/api";
 import CarCard from "../Components/CarCard";
 
 export default function SavedCars() {
-  const user = JSON.parse(localStorage.getItem("user") || "null");
-  const key = user?.id ? `savedCars_${user.id}` : null;
-  const [savedIds, setSavedIds] = useState(() =>
-    key ? JSON.parse(localStorage.getItem(key) || "[]") : [],
-  );
-  const [cars, setCars] = useState([]);
+  const [savedCars, setSavedCars] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchCars() {
+    let active = true;
+
+    async function fetchSavedCars() {
       try {
-        const response = await getCars({ limit: 50 });
-        const availableCars = response.data.cars;
-        setCars(availableCars);
+        const response = await getSavedCars();
 
-        if (key) {
-          const availableIds = new Set(availableCars.map((car) => car._id));
-          const cleanedIds = savedIds.filter((id) => availableIds.has(id));
-
-          if (cleanedIds.length !== savedIds.length) {
-            localStorage.setItem(key, JSON.stringify(cleanedIds));
-            setSavedIds(cleanedIds);
-          }
+        if (active) {
+          setSavedCars(response.data.cars || []);
         }
       } catch (error) {
-        console.error("GET CARS ERROR:", error);
+        console.error("GET SAVED CARS ERROR:", error);
+
+        if (active) {
+          setSavedCars([]);
+        }
       } finally {
-        setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     }
 
-    fetchCars();
+    fetchSavedCars();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
-  const savedCars = cars.filter((car) => savedIds.includes(car._id));
+  async function removeSaved(carId) {
+    try {
+      await removeSavedCar(carId);
 
-  function removeSaved(carId) {
-    const updatedIds = savedIds.filter((id) => id !== carId);
-
-    if (key) {
-      localStorage.setItem(key, JSON.stringify(updatedIds));
+      setSavedCars((prev) => prev.filter((car) => car._id !== carId));
+    } catch (error) {
+      alert(error.response?.data?.message || "Failed to remove saved car");
     }
-
-    setSavedIds(updatedIds);
   }
 
   if (loading) {
@@ -66,7 +63,9 @@ export default function SavedCars() {
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-gray-400">
               Your shortlist
             </p>
+
             <h1 className="section-title mt-2">Saved Cars</h1>
+
             <p className="section-copy">
               Keep interesting listings here while you decide.
             </p>
@@ -83,9 +82,11 @@ export default function SavedCars() {
         {!savedCars.length ? (
           <div className="surface p-12 text-center">
             <h2 className="text-xl font-bold">No saved cars yet</h2>
+
             <p className="mt-2 text-sm text-gray-500">
               Save a car from its details page to see it here.
             </p>
+
             <Link to="/cars" className="primary-button mt-6">
               Browse Cars
             </Link>
@@ -95,6 +96,7 @@ export default function SavedCars() {
             {savedCars.map((car) => (
               <div key={car._id}>
                 <CarCard car={car} />
+
                 <button
                   onClick={() => removeSaved(car._id)}
                   className="mt-2 w-full rounded-[10px] border border-gray-200 py-2.5 text-sm font-medium text-gray-500 hover:border-red-200 hover:bg-red-50 hover:text-red-600"

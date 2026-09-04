@@ -116,10 +116,11 @@ const addCompareCar = async (req, res) => {
 
     const user = await User.findById(req.user.userId);
 
-    if (
-      (user.compareCars || []).length >= 4 &&
-      !user.compareCars.includes(carId)
-    ) {
+    const alreadyCompared = (user.compareCars || []).some(
+      (id) => id.toString() === carId,
+    );
+
+    if ((user.compareCars || []).length >= 4 && !alreadyCompared) {
       return res.status(400).json({
         message: "You can compare a maximum of 4 cars",
       });
