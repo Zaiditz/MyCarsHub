@@ -20,29 +20,64 @@ const createCar = async (req, res) => {
 
     const numericYear = Number(year);
     const numericPrice = Number(price);
-    const numericMileage = mileage === undefined || mileage === "" ? undefined : Number(mileage);
-    const numericKilometers = kilometersDriven === undefined || kilometersDriven === "" ? undefined : Number(kilometersDriven);
+    const numericMileage =
+      mileage === undefined || mileage === "" ? undefined : Number(mileage);
+    const numericKilometers =
+      kilometersDriven === undefined || kilometersDriven === ""
+        ? undefined
+        : Number(kilometersDriven);
 
-    if (!brand?.trim() || !model?.trim() || !city?.trim() || !Number.isFinite(numericYear) || numericYear < 1900 || !Number.isFinite(numericPrice) || numericPrice < 0) {
-      return res.status(400).json({ message: "Please provide valid car details" });
+    if (
+      !brand?.trim() ||
+      !model?.trim() ||
+      !city?.trim() ||
+      !Number.isFinite(numericYear) ||
+      numericYear < 1900 ||
+      !Number.isFinite(numericPrice) ||
+      numericPrice < 0
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Please provide valid car details" });
     }
 
-    if (numericMileage !== undefined && (!Number.isFinite(numericMileage) || numericMileage < 0)) {
-      return res.status(400).json({ message: "Mileage must be a valid non-negative number" });
+    if (
+      numericMileage !== undefined &&
+      (!Number.isFinite(numericMileage) || numericMileage < 0)
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Mileage must be a valid non-negative number" });
     }
 
-    if (numericKilometers !== undefined && (!Number.isFinite(numericKilometers) || numericKilometers < 0)) {
-      return res.status(400).json({ message: "Kilometers driven must be a valid non-negative number" });
+    if (
+      numericKilometers !== undefined &&
+      (!Number.isFinite(numericKilometers) || numericKilometers < 0)
+    ) {
+      return res
+        .status(400)
+        .json({
+          message: "Kilometers driven must be a valid non-negative number",
+        });
     }
 
-    const seller = await User.findById(req.user.userId).select("subscriptionPlan subscriptionStatus subscriptionExpiresAt");
+    const seller = await User.findById(req.user.userId).select(
+      "subscriptionPlan subscriptionStatus subscriptionExpiresAt",
+    );
     if (!seller) {
       return res.status(401).json({ message: "Seller account not found" });
     }
 
-    const isPro = seller.subscriptionPlan === "pro" && seller.subscriptionStatus === "active" && seller.subscriptionExpiresAt && seller.subscriptionExpiresAt > new Date();
+    const isPro =
+      seller.subscriptionPlan === "pro" &&
+      seller.subscriptionStatus === "active" &&
+      seller.subscriptionExpiresAt &&
+      seller.subscriptionExpiresAt > new Date();
     const activeListingLimit = isPro ? 10 : 2;
-    const activeListingCount = await Car.countDocuments({ seller: seller._id, status: "active" });
+    const activeListingCount = await Car.countDocuments({
+      seller: seller._id,
+      status: "active",
+    });
 
     if (activeListingCount >= activeListingLimit) {
       return res.status(403).json({
@@ -227,7 +262,10 @@ const getCarById = async (req, res) => {
     const { id } = req.params;
 
     const car = await Car.findOne({ _id: id, status: "active" })
-      .populate("seller", "name createdAt verificationStatus subscriptionPlan subscriptionStatus")
+      .populate(
+        "seller",
+        "name createdAt verificationStatus subscriptionPlan subscriptionStatus",
+      )
       .lean();
 
     if (!car) {
